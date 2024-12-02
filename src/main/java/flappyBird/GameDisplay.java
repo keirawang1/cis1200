@@ -121,7 +121,7 @@ public class GameDisplay extends JPanel {
                     playing = false;
                     break;
                 }
-                if (o.getPx() < bird.getPx()) {
+                if (o.getPx() + o.getWidth() < bird.getPx()) {
                     score += 50;
                 }
                 if (o.isOutOfBounds()) {
@@ -140,6 +140,7 @@ public class GameDisplay extends JPanel {
         playing = true;
         // Make sure that this component has the keyboard focus
         requestFocusInWindow();
+        score = 0;
     }
 
     public void pause(JButton button) {
