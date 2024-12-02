@@ -1,14 +1,20 @@
 package flappyBird;
 
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.ListIterator;
-import java.util.Random;
-import java.awt.Color;
 import java.util.List;
+import java.util.Random;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.Timer;
 
 public class GameDisplay extends JPanel {
     // the state of the game logic
@@ -95,7 +101,6 @@ public class GameDisplay extends JPanel {
      */
     int tickCounter = 0;
     void tick() {
-        Iterator<Obstacle> obstacleIterator = obstacles.iterator();
         if (playing) {
             bird.move();
             scoreBoard.setText("Score: " + score);
@@ -109,6 +114,7 @@ public class GameDisplay extends JPanel {
                     obstacle.move();
                 }
             }
+            Iterator<Obstacle> obstacleIterator = obstacles.iterator();
             while (obstacleIterator.hasNext()) {
                 Obstacle o = obstacleIterator.next();
                 if (bird.intersects(o)) {
@@ -118,9 +124,9 @@ public class GameDisplay extends JPanel {
                 if (o.getPx() < bird.getPx()) {
                     score += 50;
                 }
-                /*if (o.isOutOfBounds()) {
+                if (o.isOutOfBounds()) {
                     obstacleIterator.remove();
-                } */
+                }
             }
             repaint();
             requestFocusInWindow();
