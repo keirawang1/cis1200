@@ -1,0 +1,10 @@
+Bird: 560, 355
+Score: 1000
+TickCounter: 2372
+Playing: false
+GameOver: true
+Obstacles: 4
+131, -582, 438, 800, -1, java.awt.Color[r=107,g=123,b=98], 22
+131, 316, 438, 800, -1, java.awt.Color[r=107,g=123,b=98], 22
+771, -447, 498, 800, -1, java.awt.Color[r=127,g=166,b=135], 23
+771, 439, 498, 800, -1, java.awt.Color[r=127,g=166,b=135], 23

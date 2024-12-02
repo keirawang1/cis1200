@@ -33,4 +33,9 @@ public class Bird extends GameObj {
     public void draw(Graphics g) {
         g.drawImage(img, this.getPx(), this.getPy(), this.getWidth(), this.getHeight(), null);
     }
+
+    @Override
+    public String toString() {
+        return this.getPx() + ", " + this.getPy();
+    }
 }

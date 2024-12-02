@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -23,6 +24,10 @@ public class GameDisplay extends JPanel {
     private boolean playing = true; // whether the game is running
     private int score = 0;
     private final JLabel scoreBoard;
+    private int id = 0;
+    private int lastObstacle = -1;
+    private int tickCounter = 0;
+    private boolean isGameOver = false;
 
     // Game constants
     public static final int COURT_WIDTH = 1000;
@@ -32,6 +37,24 @@ public class GameDisplay extends JPanel {
 
     // Update interval for timer, in milliseconds
     public static final int INTERVAL = 20;
+
+    //SETTERS --------------------------------------------------------------------
+    public void setBird(Bird bird) {
+        this.bird = bird;
+    }
+
+    public void setScore(int score) {
+        this.score = score;
+    }
+
+    public void setObstacles(List<Obstacle> obstacles) {
+        this.obstacles.addAll(obstacles);
+    }
+
+    public void setTickCounter(int tickCounter) {
+        this.tickCounter = tickCounter;
+    }
+    //-----------------------------------------------------------------------------
 
     public GameDisplay(JLabel scoreBoard) {
         // creates border around the court area, JComponent method
@@ -90,23 +113,27 @@ public class GameDisplay extends JPanel {
             velY = 1;
         }
         Color color = getRandomColor(colorList);
-        obstacles.add(new Obstacle(2000, COURT_HEIGHT, width, 800, posY, velY, color));
+        obstacles.add(new Obstacle(2000, COURT_HEIGHT, width, 800, posY, velY, color, id));
         obstacles.add(new Obstacle(2000, COURT_HEIGHT, width, 800,
-                posY + 800 + gap, velY, color));
-
+                posY + 800 + gap, velY, color, id));
+        id++;
     }
+    
     /**
      * This method is called every time the timer defined in the constructor
      * triggers.
      */
-    int tickCounter = 0;
+
     void tick() {
-        if (playing) {
+        if (playing && !isGameOver) {
             bird.move();
             scoreBoard.setText("Score: " + score);
 
-            if (tickCounter % 275 == 0) {
-                generateRandomObstacle();
+            if (obstacles.size() > 0) {
+                Obstacle lastOb = obstacles.get(obstacles.size() - 1);
+                if (COURT_WIDTH - lastOb.getPx() - lastOb.getWidth() > 200) {
+                    generateRandomObstacle();
+                }
             }
 
             if (tickCounter % 2 == 0) {
@@ -119,37 +146,165 @@ public class GameDisplay extends JPanel {
                 Obstacle o = obstacleIterator.next();
                 if (bird.intersects(o)) {
                     playing = false;
+                    isGameOver = true;
                     break;
                 }
                 if (o.getPx() + o.getWidth() < bird.getPx()) {
-                    score += 50;
+                    if (lastObstacle < o.getId()) {    
+                        score += 100;
+                        lastObstacle = o.getId();
+                    }
                 }
                 if (o.isOutOfBounds()) {
                     obstacleIterator.remove();
                 }
             }
-            repaint();
-            requestFocusInWindow();
         }
+        repaint();
+        requestFocusInWindow();
         tickCounter++;
     }
 
     public void reset() {
         bird = new Bird(COURT_WIDTH, COURT_HEIGHT);
         obstacles = new ArrayList<>();
+        generateRandomObstacle();
         playing = true;
         // Make sure that this component has the keyboard focus
         requestFocusInWindow();
         score = 0;
+        tickCounter = 0;
+        isGameOver = false;
     }
 
-    public void pause(JButton button) {
-        playing = !playing;
+    public void pauseLabelController(JButton button) {
         if (!playing) {
             button.setText("Unpause");
         }
         else {
             button.setText("Pause");
+        }
+    }
+
+    public void pauseToggler(JButton button) {
+        playing = !playing;
+        pauseLabelController(button);
+    }
+
+    public void saveGame() {
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter("gameState.txt"));
+            writer.write("Bird: " + bird.toString() + "\n");
+            writer.write("Score: " + score + "\n");
+            writer.write("TickCounter: " + tickCounter + "\n");
+            writer.write("Playing: " + playing + "\n");
+            writer.write("GameOver: " + isGameOver + "\n");
+            writer.write("Obstacles: " + obstacles.size() + "\n");
+            for (Obstacle obstacle : obstacles) {
+                writer.write(obstacle.toString() + "\n");
+            }
+            writer.close();
+        }
+        catch (IOException e) {
+            System.out.println("Error saving game" + e.getMessage());
+        }
+    }
+
+    private static Color parseColor(String colorString) {
+        String[] colors = colorString.split(",");
+        int red = Integer.parseInt(colors[0].split("=")[1]);
+        int green = Integer.parseInt(colors[1].split("=")[1]);
+        String b = colors[2].split("=")[1];
+        b = b.substring(0, b.length() - 1);
+        int blue = Integer.parseInt(b);
+        return new Color(red, green, blue);
+    }
+
+    public void loadGame() {
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader("gameState.txt"));
+            String birdPosition = reader.readLine();
+            if (!birdPosition.startsWith("Bird: ")) {
+                throw new IllegalArgumentException("Not a valid file");
+            }
+            birdPosition = birdPosition.substring("Bird: ".length());
+            String[] birdPos = birdPosition.split(", ");
+            int birdX = Integer.parseInt(birdPos[0]);
+            int birdY = Integer.parseInt(birdPos[1]);
+            Bird bird = new Bird(COURT_WIDTH, COURT_HEIGHT);
+            bird.setPx(birdX);
+            bird.setPy(birdY);
+
+            String score = reader.readLine();
+            if (!score.startsWith("Score: ")) {
+                throw new IllegalArgumentException("Not a valid file");
+            }
+            score = score.substring("Score: ".length());
+            int score1 = Integer.parseInt(score);
+
+            String tickCount = reader.readLine();
+            if (!tickCount.startsWith("TickCounter: ")) {
+                throw new IllegalArgumentException("Not a valid file");
+            }
+            tickCount = tickCount.substring("TickCounter: ".length());
+            int tick = Integer.parseInt(tickCount);
+
+            String playing = reader.readLine();
+            if (!playing.startsWith("Playing: ")) {
+                throw new IllegalArgumentException("Not a valid file");
+            }
+            playing = playing.substring("Playing: ".length());
+            if (playing.equals("true")) {
+                this.playing = true;
+            }
+            else {
+                this.playing = false;
+            }
+            System.out.println("isplaying = " + playing);
+            System.out.println("this isplaying = " + this.playing);
+
+            String gameOver = reader.readLine();
+            if (!gameOver.startsWith("GameOver: ")) {
+                throw new IllegalArgumentException("Not a valid file");
+            }
+            gameOver = gameOver.substring("GameOver: ".length());
+            if (gameOver.equals("true")) {
+                this.isGameOver = true;
+            }
+            else {
+                this.isGameOver = false;
+            }
+
+            String obstacleCount = reader.readLine();
+            if (!obstacleCount.startsWith("Obstacles: ")) {
+                throw new IllegalArgumentException("Not a valid file");
+            }
+            obstacleCount = obstacleCount.substring("Obstacles: ".length());
+            int count = Integer.parseInt(obstacleCount);
+            ArrayList<Obstacle> obstacleList = new ArrayList<>();
+            for (int i = 0; i < count; i++) {
+                String obstacle = reader.readLine();
+                String[] fields = obstacle.split(", ");
+                int obstacleX = Integer.parseInt(fields[0]);
+                int obstacleY = Integer.parseInt(fields[1]);
+                int obstacleWidth = Integer.parseInt(fields[2]);
+                int obstacleHeight = Integer.parseInt(fields[3]);
+                int obstacleVelY = Integer.parseInt(fields[4]);
+                Color color = parseColor(fields[5]);
+                int obstacleId = Integer.parseInt(fields[6]);
+                Obstacle o = new Obstacle(COURT_WIDTH, COURT_HEIGHT, obstacleWidth, obstacleHeight,
+                        obstacleY, obstacleVelY, color, obstacleId);
+                o.setPx(obstacleX);
+                obstacleList.add(o);
+            }
+            this.setBird(bird);
+            this.setObstacles(obstacleList);
+            this.setScore(score1);
+            this.setTickCounter(tick);
+            scoreBoard.setText("Score: " + score);
+        }
+        catch (IOException e) {
+            throw new RuntimeException("Error loading game" + e.getMessage());
         }
     }
 

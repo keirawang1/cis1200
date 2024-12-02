@@ -1,8 +1,9 @@
 package flappyBird;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 
@@ -34,8 +35,9 @@ public class RunFlappyBird implements Runnable {
 
         // Top-level frame in which game components live.
         // Be sure to change "TOP LEVEL FRAME" to the name of your game
-        final JFrame frame = new JFrame("TOP LEVEL FRAME");
+        final JFrame frame = new JFrame("Flappy Bird");
         frame.setLocation(300, 300);
+        frame.setBackground(bgColor);
 
         // Status panel
         final JPanel status_panel = new JPanel();
@@ -49,20 +51,40 @@ public class RunFlappyBird implements Runnable {
         frame.add(court, BorderLayout.CENTER);
         court.setBackground(bgColor);
 
-        // Reset button
         final JPanel control_panel = new JPanel();
         frame.add(control_panel, BorderLayout.NORTH);
         control_panel.setBackground(sideColor);
-        final JButton reset = new JButton("Reset");
-        reset.addActionListener(e -> court.reset());
-        control_panel.add(reset);
 
         // Pause button
         final JButton pause = new JButton("Pause");
-        pause.addActionListener(e -> court.pause(pause));
+        pause.addActionListener(e -> court.pauseToggler(pause));
         control_panel.add(pause);
 
+        // Reset button
+        final JButton reset = new JButton("Reset");
+        reset.addActionListener(e -> { court.reset(); court.pauseLabelController(pause);});
+        control_panel.add(reset);
+
         applyFontToComponents(customFont, scoreBoard, reset, pause);
+
+        frame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                court.saveGame();
+            }
+            @Override
+            public void windowOpened(WindowEvent e) {
+                try {
+                    court.loadGame();
+                    court.pauseLabelController(pause);
+                }
+                catch (RuntimeException e1) {
+                    e1.printStackTrace();
+                    court.reset();
+                }
+            }
+        });
+
 
         // Put the frame on the screen
         frame.pack();

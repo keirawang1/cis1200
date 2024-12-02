@@ -3,8 +3,6 @@ package flappyBird;
 import org.junit.jupiter.api.*;
 
 import javax.swing.*;
-import java.awt.*;
-import java.util.ArrayList;
 import java.awt.Color;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -57,7 +55,7 @@ public class FlappyBirdTest {
     @Test
     public void moveObstacle() {
         Obstacle obstacle = new Obstacle(200, 200, 50, 100,
-                0, 1, Color.BLACK);
+                0, 1, Color.BLACK, 0);
         obstacle.move();
         assertEquals(996, obstacle.getPx());
     }
@@ -65,7 +63,7 @@ public class FlappyBirdTest {
     @Test
     public void obstacleOutOfBounds() {
         Obstacle obstacle = new Obstacle(200, 200, 50, 100,
-                0, 1, Color.BLACK);
+                0, 1, Color.BLACK, 0);
         obstacle.setPx(-60);
         assertTrue(obstacle.isOutOfBounds());
     }
@@ -74,7 +72,7 @@ public class FlappyBirdTest {
     public void twoObjectIntersection() {
         Bird bird = new Bird(200, 200);
         Obstacle obstacle = new Obstacle(200, 200, 50, 100,
-                0, 1, Color.BLACK);
+                0, 1, Color.BLACK, 0);
         assertFalse(bird.intersects(obstacle));
         obstacle.setPx(0);
         obstacle.setPy(200);
@@ -94,7 +92,7 @@ public class FlappyBirdTest {
         JButton pause = new JButton();
         JLabel score = new JLabel();
         GameDisplay court = new GameDisplay(score);
-        court.pause(pause);
+        court.pauseLabelController(pause);
         assertEquals("Unpause", pause.getText());
     }
 
@@ -117,9 +115,9 @@ public class FlappyBirdTest {
         Bird bird = new Bird(200, 200);
         bird.setVx(10);
         Obstacle obstacle = new Obstacle(200, 200, 50, 100,
-                0, 1, Color.BLACK);
+                0, 1, Color.BLACK, 0);
         Obstacle obstacle2 = new Obstacle(200, 200, 50, 100,
-                300, 1, Color.BLACK);
+                300, 1, Color.BLACK, 0);
         assertEquals(0, score);
         obstacle.setPx(0);
         obstacle2.setPx(0);
