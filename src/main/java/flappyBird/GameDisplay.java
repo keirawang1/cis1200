@@ -19,17 +19,18 @@ import javax.swing.Timer;
 
 public class GameDisplay extends JPanel {
     // the state of the game logic
-    private Bird bird = new Bird(1000, 400); // the Black Square, keyboard control
-    private ArrayList<Obstacle> obstacles = new ArrayList<>();
-    private boolean playing = true; // whether the game is running
+    private Bird bird = new Bird(1000, 400); //controllable player
+    private ArrayList<Obstacle> obstacles = new ArrayList<>(); //collection that manages obstacles
+    private boolean playing = true; // whether the game is paused
     private int score = 0;
-    private final JLabel scoreBoard;
-    private int id = 0;
+    private int highScore = 0;
+    private int id = 0; //tracks unique obstacle
     private int lastObstacle = -1;
     private int tickCounter = 0;
-    private boolean isGameOver = false;
+    private boolean isGameOver = false; // if game is over
 
     // Game constants
+    private final JLabel scoreBoard;
     public static final int COURT_WIDTH = 1000;
     public static final int COURT_HEIGHT = 400;
     public static final int BIRD_VELOCITY_X = 10;
@@ -38,38 +39,27 @@ public class GameDisplay extends JPanel {
     // Update interval for timer, in milliseconds
     public static final int INTERVAL = 20;
 
-    //SETTERS --------------------------------------------------------------------
-    public void setBird(Bird bird) {
-        this.bird = bird;
-    }
 
-    public void setScore(int score) {
-        this.score = score;
-    }
+    //GETTERS & SETTERS --------------------------------------------------------------------
+    public ArrayList<Obstacle> getObstacles() { return obstacles; }
 
-    public void setObstacles(List<Obstacle> obstacles) {
-        this.obstacles.addAll(obstacles);
-    }
+    public void setBird(Bird bird) { this.bird = bird; }
 
-    public void setTickCounter(int tickCounter) {
-        this.tickCounter = tickCounter;
-    }
-    //-----------------------------------------------------------------------------
+    public void setScore(int score) { this.score = score; }
+
+    public void setObstacles(List<Obstacle> obstacles) { this.obstacles.addAll(obstacles); }
+
+    public void setTickCounter(int tickCounter) { this.tickCounter = tickCounter; }
+
+    public void setHighScore(int highScore) { this.highScore = highScore; }
+
+    // CONSTRUCTOR -----------------------------------------------------------------------------
 
     public GameDisplay(JLabel scoreBoard) {
         // creates border around the court area, JComponent method
         setBorder(BorderFactory.createLineBorder(Color.BLACK));
-
-        // The timer is an object which triggers an action periodically with the
-        // given INTERVAL. We register an ActionListener with this timer, whose
-        // actionPerformed() method is called each time the timer triggers. We
-        // define a helper method called tick() that actually does everything
-        // that should be done in a single time step.
         Timer timer = new Timer(INTERVAL, e -> tick());
-        timer.start(); // MAKE SURE TO START THE TIMER!
-
-        // Enable keyboard focus on the court area. When this component has the
-        // keyboard focus, key events are handled by its key listener.
+        timer.start();
         setFocusable(true);
 
         // This key listener allows the square to move as long as an arrow key
@@ -96,9 +86,8 @@ public class GameDisplay extends JPanel {
         this.scoreBoard = scoreBoard;
     }
 
-    public ArrayList<Obstacle> getObstacles() {
-        return obstacles;
-    }
+
+    // OBSTACLES -----------------------------------------------------------------------------
 
     public int randomInt(int min, int max) {
         return (int) (Math.random() * (max - min) + 1) + min;
@@ -118,20 +107,17 @@ public class GameDisplay extends JPanel {
                 posY + 800 + gap, velY, color, id));
         id++;
     }
-    
-    /**
-     * This method is called every time the timer defined in the constructor
-     * triggers.
-     */
+
+    // TICK -----------------------------------------------------------------------------
 
     void tick() {
         if (playing && !isGameOver) {
             bird.move();
-            scoreBoard.setText("Score: " + score);
+            scoreBoard.setText("High Score: " + highScore + "                         Score: " + score);
 
-            if (obstacles.size() > 0) {
+            if (!obstacles.isEmpty()) {
                 Obstacle lastOb = obstacles.get(obstacles.size() - 1);
-                if (COURT_WIDTH - lastOb.getPx() - lastOb.getWidth() > 200) {
+                if (COURT_WIDTH - obstacles.getLast().getPx() - obstacles.getLast().getWidth() > 200) {
                     generateRandomObstacle();
                 }
             }
@@ -147,11 +133,16 @@ public class GameDisplay extends JPanel {
                 if (bird.intersects(o)) {
                     playing = false;
                     isGameOver = true;
+                    AudioPlayer.playEffect("files/explosion.wav");
                     break;
                 }
                 if (o.getPx() + o.getWidth() < bird.getPx()) {
                     if (lastObstacle < o.getId()) {    
                         score += 100;
+                        AudioPlayer.playEffect("files/score.wav");
+                        if (score > highScore) {
+                            highScore = score;
+                        }
                         lastObstacle = o.getId();
                     }
                 }
@@ -164,6 +155,8 @@ public class GameDisplay extends JPanel {
         requestFocusInWindow();
         tickCounter++;
     }
+
+    // RESET & PAUSE -----------------------------------------------------------------------------
 
     public void reset() {
         bird = new Bird(COURT_WIDTH, COURT_HEIGHT);
@@ -191,11 +184,14 @@ public class GameDisplay extends JPanel {
         pauseLabelController(button);
     }
 
+    // SAVE & LOAD -----------------------------------------------------------------------------
+
     public void saveGame() {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter("gameState.txt"));
             writer.write("Bird: " + bird.toString() + "\n");
             writer.write("Score: " + score + "\n");
+            writer.write( "HighScore: " + highScore + "\n");
             writer.write("TickCounter: " + tickCounter + "\n");
             writer.write("Playing: " + playing + "\n");
             writer.write("GameOver: " + isGameOver + "\n");
@@ -242,6 +238,13 @@ public class GameDisplay extends JPanel {
             score = score.substring("Score: ".length());
             int score1 = Integer.parseInt(score);
 
+            String highScore = reader.readLine();
+            if (!highScore.startsWith("HighScore: ")) {
+                throw new IllegalArgumentException("Not a valid file");
+            }
+            highScore = highScore.substring("HighScore: ".length());
+            int highScore1 = Integer.parseInt(highScore);
+
             String tickCount = reader.readLine();
             if (!tickCount.startsWith("TickCounter: ")) {
                 throw new IllegalArgumentException("Not a valid file");
@@ -260,8 +263,6 @@ public class GameDisplay extends JPanel {
             else {
                 this.playing = false;
             }
-            System.out.println("isplaying = " + playing);
-            System.out.println("this isplaying = " + this.playing);
 
             String gameOver = reader.readLine();
             if (!gameOver.startsWith("GameOver: ")) {
@@ -300,8 +301,9 @@ public class GameDisplay extends JPanel {
             this.setBird(bird);
             this.setObstacles(obstacleList);
             this.setScore(score1);
+            this.setHighScore(highScore1);
             this.setTickCounter(tick);
-            scoreBoard.setText("Score: " + score);
+            scoreBoard.setText("High Score: " + highScore + "                         Score: " + score);
         }
         catch (IOException e) {
             throw new RuntimeException("Error loading game" + e.getMessage());
@@ -312,7 +314,7 @@ public class GameDisplay extends JPanel {
         return score;
     }
 
-
+    // COLORS -----------------------------------------------------------------------------
     public static Color getRandomColor(List<Color> colors) {
         if (colors == null || colors.isEmpty()) {
             throw new IllegalArgumentException("Color list cannot be null or empty.");
@@ -330,6 +332,15 @@ public class GameDisplay extends JPanel {
             new Color(187, 183, 131),
             new Color(127, 166, 135),
             new Color(157, 184, 144));
+ /*
+    try {
+        File audioFile = new File("audio.wav"); // Replace with your file path
+        AudioInputStream audioStream = AudioSystem.getAudioInputStream(audioFile);
+        Clip clip = AudioSystem.getClip();
+        clip.start();
+    } catch (IOException e) {
+        System.out.println("Error loading audio: " + e.getMessage());
+    } */
 
     @Override
     public void paintComponent(Graphics g) {

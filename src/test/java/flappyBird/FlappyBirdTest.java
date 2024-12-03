@@ -101,6 +101,8 @@ public class FlappyBirdTest {
         JLabel score = new JLabel();
         GameDisplay court = new GameDisplay(score);
         court.generateRandomObstacle();
+
+        court.tick();
         for (Obstacle obstacle : court.getObstacles()) {
             obstacle.setPx(-300);
         }
@@ -111,17 +113,19 @@ public class FlappyBirdTest {
     public void scoreUpdate() {
         JLabel score = new JLabel();
         GameDisplay court = new GameDisplay(score);
-        int x = court.getScore();
         Bird bird = new Bird(200, 200);
         bird.setVx(10);
         Obstacle obstacle = new Obstacle(200, 200, 50, 100,
                 0, 1, Color.BLACK, 0);
         Obstacle obstacle2 = new Obstacle(200, 200, 50, 100,
                 300, 1, Color.BLACK, 0);
-        assertEquals(0, score);
+        int x = court.getScore();
+        assertEquals(0, x);
         obstacle.setPx(0);
         obstacle2.setPx(0);
         bird.setPx(100);
+        court.tick();
+        x = court.getScore();
         assertEquals(100, x);
     }
 

@@ -2,6 +2,8 @@ package flappyBird;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -16,6 +18,7 @@ public class RunFlappyBird implements Runnable {
     }
 
     public void run() {
+        AudioPlayer.playMusic("files/lol.wav");
 
         Color bgColor = new Color(226, 231, 224);
         Color sideColor = new Color(150, 168, 157);
@@ -39,39 +42,64 @@ public class RunFlappyBird implements Runnable {
         frame.setLocation(300, 300);
         frame.setBackground(bgColor);
 
-        // Status panel
-        final JPanel status_panel = new JPanel();
-        frame.add(status_panel, BorderLayout.SOUTH);
-        status_panel.setBackground(sideColor);
-        final JLabel scoreBoard = new JLabel("Score: ");
-        status_panel.add(scoreBoard);
+        // bottom panel with score
+        final JPanel score_panel = new JPanel();
+        frame.add(score_panel, BorderLayout.SOUTH);
+        score_panel.setBackground(sideColor);
+        final JLabel scoreBoard = new JLabel();
+        score_panel.add(scoreBoard);
+
 
         // Main playing area
         final GameDisplay court = new GameDisplay(scoreBoard);
         frame.add(court, BorderLayout.CENTER);
         court.setBackground(bgColor);
+        final JLabel s = new JLabel("Hi");
+        frame.add(s, BorderLayout.NORTH);
 
+        //Top panel with pause and reset button
         final JPanel control_panel = new JPanel();
         frame.add(control_panel, BorderLayout.NORTH);
         control_panel.setBackground(sideColor);
 
         // Pause button
         final JButton pause = new JButton("Pause");
-        pause.addActionListener(e -> court.pauseToggler(pause));
+        pause.addActionListener(e -> {court.pauseToggler(pause) ;
+            AudioPlayer.playEffect("files/press.wav");});
+        pause.addKeyListener(new KeyAdapter()  {
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_SPACE)
+                    court.pauseToggler(pause); }
+        });
         control_panel.add(pause);
 
         // Reset button
         final JButton reset = new JButton("Reset");
-        reset.addActionListener(e -> { court.reset(); court.pauseLabelController(pause);});
+        reset.addActionListener(e -> { court.reset(); court.pauseLabelController(pause);
+            AudioPlayer.playEffect("files/press.wav");});
         control_panel.add(reset);
 
-        applyFontToComponents(customFont, scoreBoard, reset, pause);
+        final JButton quit = new JButton("Save & Quit");
+        quit.addActionListener(e -> { AudioPlayer.playEffect("files/press.wav");
+            court.saveGame() ; System.exit(0);});
+        control_panel.add(quit);
+
+        applyFontToComponents(customFont, scoreBoard, reset, pause, quit);
+
 
         frame.addWindowListener(new WindowAdapter() {
             @Override
-            public void windowClosing(WindowEvent e) {
-                court.saveGame();
+            public void windowClosed(WindowEvent e) {
+                try {
+                    court.saveGame();
+                }
+                catch (RuntimeException e1) {
+                    court.reset();
+                }
             }
+        });
+
+        frame.addWindowListener(new WindowAdapter() {
             @Override
             public void windowOpened(WindowEvent e) {
                 try {
@@ -79,7 +107,6 @@ public class RunFlappyBird implements Runnable {
                     court.pauseLabelController(pause);
                 }
                 catch (RuntimeException e1) {
-                    e1.printStackTrace();
                     court.reset();
                 }
             }
