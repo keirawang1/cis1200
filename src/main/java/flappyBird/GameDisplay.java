@@ -5,7 +5,11 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -117,7 +121,7 @@ public class GameDisplay extends JPanel {
 
             if (!obstacles.isEmpty()) {
                 Obstacle lastOb = obstacles.get(obstacles.size() - 1);
-                if (COURT_WIDTH - obstacles.getLast().getPx() - obstacles.getLast().getWidth() > 200) {
+                if (COURT_WIDTH - lastOb.getPx() - lastOb.getWidth() > 200) {
                     generateRandomObstacle();
                 }
             }

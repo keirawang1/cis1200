@@ -1,13 +1,21 @@
 package flappyBird;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontFormatException;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
+
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 public class RunFlappyBird implements Runnable {
 
@@ -89,22 +97,19 @@ public class RunFlappyBird implements Runnable {
 
         frame.addWindowListener(new WindowAdapter() {
             @Override
-            public void windowClosed(WindowEvent e) {
+            public void windowOpened(WindowEvent e) {
                 try {
-                    court.saveGame();
+                    court.loadGame();
+                    court.pauseLabelController(pause);
                 }
                 catch (RuntimeException e1) {
                     court.reset();
                 }
             }
-        });
-
-        frame.addWindowListener(new WindowAdapter() {
             @Override
-            public void windowOpened(WindowEvent e) {
+            public void windowClosing(WindowEvent e) {
                 try {
-                    court.loadGame();
-                    court.pauseLabelController(pause);
+                    court.saveGame();
                 }
                 catch (RuntimeException e1) {
                     court.reset();
