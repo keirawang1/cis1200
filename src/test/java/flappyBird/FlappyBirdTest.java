@@ -4,6 +4,7 @@ import org.junit.jupiter.api.*;
 
 import javax.swing.*;
 import java.awt.Color;
+import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -55,7 +56,7 @@ public class FlappyBirdTest {
     @Test
     public void moveObstacle() {
         Obstacle obstacle = new Obstacle(200, 200, 50, 100,
-                0, 1, Color.BLACK, 0);
+                Color.BLACK, 0);
         obstacle.move();
         assertEquals(996, obstacle.getPx());
     }
@@ -63,7 +64,7 @@ public class FlappyBirdTest {
     @Test
     public void obstacleOutOfBounds() {
         Obstacle obstacle = new Obstacle(200, 200, 50, 100,
-                0, 1, Color.BLACK, 0);
+                Color.BLACK, 0);
         obstacle.setPx(-60);
         assertTrue(obstacle.isOutOfBounds());
     }
@@ -72,7 +73,7 @@ public class FlappyBirdTest {
     public void twoObjectIntersection() {
         Bird bird = new Bird(200, 200);
         Obstacle obstacle = new Obstacle(200, 200, 50, 100,
-                0, 1, Color.BLACK, 0);
+                Color.BLACK, 0);
         assertFalse(bird.intersects(obstacle));
         obstacle.setPx(0);
         obstacle.setPy(200);
@@ -83,7 +84,8 @@ public class FlappyBirdTest {
     public void generateRandomObstacles() {
         JLabel score = new JLabel();
         GameDisplay court = new GameDisplay(score);
-        court.generateRandomObstacle();
+        ArrayList<Obstacle> obstacles = new ArrayList<>();
+        Obstacle.generateRandomObstacle(obstacles);
         assertEquals(2, court.getObstacles().size());
     }
 
@@ -93,6 +95,7 @@ public class FlappyBirdTest {
         JLabel score = new JLabel();
         GameDisplay court = new GameDisplay(score);
         court.pauseLabelController(pause);
+        court.pauseToggler(pause);
         assertEquals("Unpause", pause.getText());
     }
 
@@ -100,13 +103,38 @@ public class FlappyBirdTest {
     public void removeObstacles() {
         JLabel score = new JLabel();
         GameDisplay court = new GameDisplay(score);
-        court.generateRandomObstacle();
-
-        court.tick();
+        ArrayList<Obstacle> obstacles = new ArrayList<>();
+        Obstacle.generateRandomObstacle(obstacles);
         for (Obstacle obstacle : court.getObstacles()) {
-            obstacle.setPx(-300);
+            obstacle.setPx(-100000);
+            System.out.println(obstacle.getPx());
         }
-        assertEquals(0, court.getObstacles().size());
+        court.tick(); // generates another 2 obstacles
+        assertEquals(2, court.getObstacles().size());
+    }
+
+    @Test
+    public void testTickRemoveObstacle() {
+        JLabel score = new JLabel();
+        GameDisplay court = new GameDisplay(score);
+        court.reset(); // generates 2
+        ArrayList<Obstacle> obstacles = new ArrayList<>();
+        Obstacle.generateRandomObstacle(obstacles); // adds another 2
+        assertEquals(4, court.getObstacles().size());
+        for (Obstacle obstacle : court.getObstacles()) {
+            obstacle.setPx(-300000);
+            System.out.println(obstacle.getPx());
+        }
+        court.tick(); // generates another 2 obstacles
+        assertEquals(2, court.getObstacles().size());
+    }
+
+    @Test
+    public void testReset() {
+        JLabel score = new JLabel();
+        GameDisplay court = new GameDisplay(score);
+        court.reset(); // should generate 2 objects
+        assertEquals(2, court.getObstacles().size());
     }
 
     @Test
@@ -116,9 +144,9 @@ public class FlappyBirdTest {
         Bird bird = new Bird(200, 200);
         bird.setVx(10);
         Obstacle obstacle = new Obstacle(200, 200, 50, 100,
-                0, 1, Color.BLACK, 0);
+                Color.BLACK, 0);
         Obstacle obstacle2 = new Obstacle(200, 200, 50, 100,
-                300, 1, Color.BLACK, 0);
+                Color.BLACK, 0);
         int x = court.getScore();
         assertEquals(0, x);
         obstacle.setPx(0);

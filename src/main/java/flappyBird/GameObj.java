@@ -4,7 +4,6 @@ import java.awt.Graphics;
 
 /**
  * An object in the game.
- *
  * Game objects exist in the game court. They have a position, velocity, size
  * and bounds. Their velocity controls how they move; their position should
  * always be within their bounds.
@@ -22,7 +21,7 @@ public abstract class GameObj {
 
     /* Size of object, in pixels. */
     private final int width;
-    private int height;
+    private final int height;
 
     /* Velocity: number of pixels to move every time move() is called. */
     private int vx;
@@ -41,6 +40,18 @@ public abstract class GameObj {
     /**
      * Constructor
      */
+    public GameObj() {
+        px = 1001;
+        py = 200;
+        width = 20;
+        height = 20;
+        courtWidth = 2000;
+        courtHeight = 2000;
+        maxX = courtWidth - width;
+        maxY = courtHeight - height;
+    }
+
+
     public GameObj(
             int vx, int vy, int px, int py, int width, int height, int courtWidth,
             int courtHeight
@@ -108,8 +119,6 @@ public abstract class GameObj {
         this.vy = vy;
     }
 
-    public void setHeight(int height) { this.height = height; }
-
     // **************************************************************************
     // * UPDATES AND OTHER METHODS
     // **************************************************************************
@@ -119,15 +128,11 @@ public abstract class GameObj {
      * designated for the object (i.e. Object cannot go outside the active
      * area the user defines for it).
      */
-    protected void clip() {
+    public void clip() {
         this.px = Math.min(Math.max(this.px, 0), this.maxX);
         this.py = Math.min(Math.max(this.py, 0), this.maxY);
     }
 
-    /**
-     * Moves the object by its velocity. Ensures that the object does not go
-     * outside its bounds by clipping.
-     */
     public void move() {
         this.px += this.vx;
         this.py += this.vy;
@@ -135,16 +140,7 @@ public abstract class GameObj {
         clip();
     }
 
-    /**
-     * Determine whether this game object is currently intersecting another
-     * object.
-     *
-     * Intersection is determined by comparing bounding boxes. If the bounding
-     * boxes overlap, then an intersection is considered to occur.
-     *
-     * @param that The other object
-     * @return Whether this object intersects the other object.
-     */
+    //INTERSECT & OUT OF BOUNDS -----------------------------------------------------------
     public boolean intersects(GameObj that) {
         return (this.px + this.width >= that.px
                 && this.py + this.height >= that.py
@@ -153,21 +149,8 @@ public abstract class GameObj {
     }
 
     public boolean isOutOfBounds() {
-        if (this.px + this.width < 0) {
-            return true;
-        }
-        return false;
+        return (this.px + this.width < 0);
     }
 
-    /**
-     * Default draw method that provides how the object should be drawn in the
-     * GUI. This method does not draw anything. Subclass should override this
-     * method based on how their object should appear.
-     *
-     * @param g The <code>Graphics</code> context used for drawing the object.
-     *          Remember graphics contexts that we used in OCaml, it gives the
-     *          context in which the object should be drawn (a canvas, a frame,
-     *          etc.)
-     */
     public abstract void draw(Graphics g);
 }

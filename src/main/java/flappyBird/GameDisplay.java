@@ -1,8 +1,6 @@
 package flappyBird;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
+import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
@@ -13,8 +11,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 
+import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -25,10 +23,10 @@ public class GameDisplay extends JPanel {
     // the state of the game logic
     private Bird bird = new Bird(1000, 400); //controllable player
     private ArrayList<Obstacle> obstacles = new ArrayList<>(); //collection that manages obstacles
+    private ArrayList<Coin> coins = new ArrayList<>(); //collection that manages coins
     private boolean playing = true; // whether the game is paused
     private int score = 0;
     private int highScore = 0;
-    private int id = 0; //tracks unique obstacle
     private int lastObstacle = -1;
     private int tickCounter = 0;
     private boolean isGameOver = false; // if game is over
@@ -43,15 +41,24 @@ public class GameDisplay extends JPanel {
     // Update interval for timer, in milliseconds
     public static final int INTERVAL = 20;
 
+    private Image backgroundImage;
 
-    //GETTERS & SETTERS --------------------------------------------------------------------
+    //GETTERS --------------------------------------------------------------------
     public ArrayList<Obstacle> getObstacles() { return obstacles; }
+
+    public ArrayList<Coin> getCoins() { return coins; }
+
+    public int getScore() { return score; }
+
+    //SETTERS --------------------------------------------------------------------
 
     public void setBird(Bird bird) { this.bird = bird; }
 
     public void setScore(int score) { this.score = score; }
 
     public void setObstacles(List<Obstacle> obstacles) { this.obstacles.addAll(obstacles); }
+
+    public void setCoins(List<Coin> coins) { this.coins.addAll(coins); }
 
     public void setTickCounter(int tickCounter) { this.tickCounter = tickCounter; }
 
@@ -65,6 +72,12 @@ public class GameDisplay extends JPanel {
         Timer timer = new Timer(INTERVAL, e -> tick());
         timer.start();
         setFocusable(true);
+
+        try {
+            backgroundImage = ImageIO.read(new File("files/background.png"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         // This key listener allows the square to move as long as an arrow key
         // is pressed, by changing the square's velocity accordingly. (The tick
@@ -88,28 +101,8 @@ public class GameDisplay extends JPanel {
             }
         });
         this.scoreBoard = scoreBoard;
-    }
 
-
-    // OBSTACLES -----------------------------------------------------------------------------
-
-    public int randomInt(int min, int max) {
-        return (int) (Math.random() * (max - min) + 1) + min;
-    }
-
-    public void generateRandomObstacle() {
-        int width = randomInt(200, 500);
-        int gap = randomInt(80, 100);
-        int posY = randomInt(-400, -750);
-        int velY = -1;
-        if (posY + 800 < 200) {
-            velY = 1;
-        }
-        Color color = getRandomColor(colorList);
-        obstacles.add(new Obstacle(2000, COURT_HEIGHT, width, 800, posY, velY, color, id));
-        obstacles.add(new Obstacle(2000, COURT_HEIGHT, width, 800,
-                posY + 800 + gap, velY, color, id));
-        id++;
+        Coin.generateRandomCoin(coins, obstacles);
     }
 
     // TICK -----------------------------------------------------------------------------
@@ -122,15 +115,31 @@ public class GameDisplay extends JPanel {
             if (!obstacles.isEmpty()) {
                 Obstacle lastOb = obstacles.get(obstacles.size() - 1);
                 if (COURT_WIDTH - lastOb.getPx() - lastOb.getWidth() > 200) {
-                    generateRandomObstacle();
+                    Obstacle.generateRandomObstacle(obstacles);
                 }
             }
 
             if (tickCounter % 2 == 0) {
-                for (Obstacle obstacle : obstacles) {
-                    obstacle.move();
+                for (Obstacle o : obstacles) {
+                    o.move();
+                }
+                for (Coin c : coins) {
+                    c.move();
                 }
             }
+            Iterator<Coin> coinIterator = coins.iterator();
+            while (coinIterator.hasNext()) {
+                Coin c = coinIterator.next();
+                if (bird.intersects(c)) {
+                    score += 10;
+                    AudioPlayer.playEffect("files/score.wav");
+                    if (score > highScore) {
+                        highScore = score;
+                    }
+                    coinIterator.remove();
+                }
+            }
+
             Iterator<Obstacle> obstacleIterator = obstacles.iterator();
             while (obstacleIterator.hasNext()) {
                 Obstacle o = obstacleIterator.next();
@@ -165,7 +174,7 @@ public class GameDisplay extends JPanel {
     public void reset() {
         bird = new Bird(COURT_WIDTH, COURT_HEIGHT);
         obstacles = new ArrayList<>();
-        generateRandomObstacle();
+        Obstacle.generateRandomObstacle(obstacles);
         playing = true;
         // Make sure that this component has the keyboard focus
         requestFocusInWindow();
@@ -297,7 +306,7 @@ public class GameDisplay extends JPanel {
                 int obstacleVelY = Integer.parseInt(fields[4]);
                 Color color = parseColor(fields[5]);
                 int obstacleId = Integer.parseInt(fields[6]);
-                Obstacle o = new Obstacle(COURT_WIDTH, COURT_HEIGHT, obstacleWidth, obstacleHeight,
+                Obstacle o = new Obstacle(obstacleWidth, obstacleHeight,
                         obstacleY, obstacleVelY, color, obstacleId);
                 o.setPx(obstacleX);
                 obstacleList.add(o);
@@ -314,41 +323,11 @@ public class GameDisplay extends JPanel {
         }
     }
 
-    public int getScore() {
-        return score;
-    }
-
-    // COLORS -----------------------------------------------------------------------------
-    public static Color getRandomColor(List<Color> colors) {
-        if (colors == null || colors.isEmpty()) {
-            throw new IllegalArgumentException("Color list cannot be null or empty.");
-        }
-        Random random = new Random();
-        int index = random.nextInt(colors.size()); // Generate a random index
-        return colors.get(index); // Return the color at the random index
-    }
-
-    List<Color> colorList = List.of(
-            new Color(155, 144, 0),
-            new Color(98, 93, 64),
-            new Color(68, 151, 119),
-            new Color(107, 123, 98),
-            new Color(187, 183, 131),
-            new Color(127, 166, 135),
-            new Color(157, 184, 144));
- /*
-    try {
-        File audioFile = new File("audio.wav"); // Replace with your file path
-        AudioInputStream audioStream = AudioSystem.getAudioInputStream(audioFile);
-        Clip clip = AudioSystem.getClip();
-        clip.start();
-    } catch (IOException e) {
-        System.out.println("Error loading audio: " + e.getMessage());
-    } */
-
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
+        //if (backgroundImage != null)
+            //g.drawImage(backgroundImage, 0, 0, COURT_WIDTH, COURT_HEIGHT, this);
         bird.draw(g);
         obstacles.forEach(obstacle -> obstacle.draw(g));
     }

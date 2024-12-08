@@ -38,4 +38,5 @@ public class Bird extends GameObj {
     public String toString() {
         return this.getPx() + ", " + this.getPy();
     }
+
 }

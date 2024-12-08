@@ -26,7 +26,7 @@ public class RunFlappyBird implements Runnable {
     }
 
     public void run() {
-        AudioPlayer.playMusic("files/lol.wav");
+        AudioPlayer.playMusic("files/music.wav");
 
         Color bgColor = new Color(226, 231, 224);
         Color sideColor = new Color(150, 168, 157);
@@ -62,8 +62,6 @@ public class RunFlappyBird implements Runnable {
         final GameDisplay court = new GameDisplay(scoreBoard);
         frame.add(court, BorderLayout.CENTER);
         court.setBackground(bgColor);
-        final JLabel s = new JLabel("Hi");
-        frame.add(s, BorderLayout.NORTH);
 
         //Top panel with pause and reset button
         final JPanel control_panel = new JPanel();
@@ -94,7 +92,6 @@ public class RunFlappyBird implements Runnable {
 
         applyFontToComponents(customFont, scoreBoard, reset, pause, quit);
 
-
         frame.addWindowListener(new WindowAdapter() {
             @Override
             public void windowOpened(WindowEvent e) {
@@ -116,7 +113,6 @@ public class RunFlappyBird implements Runnable {
                 }
             }
         });
-
 
         // Put the frame on the screen
         frame.pack();
