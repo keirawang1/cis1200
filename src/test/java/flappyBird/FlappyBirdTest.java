@@ -101,14 +101,14 @@ public class FlappyBirdTest {
     public void removeObstacles() {
         JLabel score = new JLabel();
         GameDisplay court = new GameDisplay(score);
-        ArrayList<Obstacle> obstacles = new ArrayList<>();
+        ArrayList<Obstacle> obstacles = court.getObstacles();
         Obstacle.generateRandomObstacle(obstacles);
-        for (Obstacle obstacle : court.getObstacles()) {
+        for (Obstacle obstacle : obstacles) {
             obstacle.setPx(-100000);
             System.out.println(obstacle.getPx());
         }
         court.tick(); // generates another 2 obstacles
-        assertEquals(2, court.getObstacles().size());
+        assertEquals(2, obstacles.size());
     }
 
     @Test
@@ -116,15 +116,15 @@ public class FlappyBirdTest {
         JLabel score = new JLabel();
         GameDisplay court = new GameDisplay(score);
         court.reset(); // generates 2
-        ArrayList<Obstacle> obstacles = new ArrayList<>();
+        ArrayList<Obstacle> obstacles = court.getObstacles();
         Obstacle.generateRandomObstacle(obstacles); // adds another 2
         assertEquals(4, court.getObstacles().size());
-        for (Obstacle obstacle : court.getObstacles()) {
+        for (Obstacle obstacle : obstacles) {
             obstacle.setPx(-300000);
             System.out.println(obstacle.getPx());
         }
         court.tick(); // generates another 2 obstacles
-        assertEquals(2, court.getObstacles().size());
+        assertEquals(2, obstacles.size());
     }
 
     @Test
@@ -139,20 +139,17 @@ public class FlappyBirdTest {
     public void scoreUpdate() {
         JLabel score = new JLabel();
         GameDisplay court = new GameDisplay(score);
-        Bird bird = new Bird(200, 200);
-        bird.setVx(10);
-        Obstacle obstacle = new Obstacle(200, 200, 50, 100,
-                Color.BLACK, 0);
-        Obstacle obstacle2 = new Obstacle(200, 200, 50, 100,
-                Color.BLACK, 0);
-        int x = court.getScore();
-        assertEquals(0, x);
-        obstacle.setPx(0);
-        obstacle2.setPx(0);
-        bird.setPx(100);
+        Bird bird = new Bird(2000, 2000);
+        ArrayList<Obstacle> obstacles = court.getObstacles();
+        Obstacle.generateRandomObstacle(obstacles);
+        assertEquals(0, court.getScore());
+        for (Obstacle obstacle : obstacles) {
+            obstacle.setPx(0);
+            System.out.println(obstacle.getPx());
+        }
+        bird.setPx(1000);
         court.tick();
-        x = court.getScore();
-        assertEquals(100, x);
+        assertEquals(100, court.getScore());
     }
 
 }
