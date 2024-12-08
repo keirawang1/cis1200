@@ -7,17 +7,21 @@ import java.util.Random;
 
 public class Obstacle extends GeneratedObj {
     // an obstacle is composed of a rectangle
-
     private final Color color;
-    private static int id = 0; //tracks unique obstacle
+    private static int id = 0; // tracks unique obstacle
 
     public Obstacle(int width, int height, int posY, int velY, Color color, int id) {
-        super(posY, velY, width, height, id);
+        super(1001, posY, velY, width, height);
         this.color = color;
     }
 
-    // GENERATE OBSTACLE -----------------------------------------------------------------------------
-    //y velocity is either positive, negative, or 0.
+    public int getId() {
+        return id;
+    }
+
+    // GENERATE OBSTACLE
+    // -----------------------------------------------------------------------------
+    // y velocity is either positive, negative, or 0.
     public static void generateRandomObstacle(ArrayList<Obstacle> obstacles) {
         int width = randomInt(200, 500);
         int gap = randomInt(80, 100);
@@ -32,7 +36,8 @@ public class Obstacle extends GeneratedObj {
         id++;
     }
 
-    // COLORS -----------------------------------------------------------------------------
+    // COLORS
+    // -----------------------------------------------------------------------------
     public static Color getRandomColor(java.util.List<Color> colors) {
         if (colors == null || colors.isEmpty()) {
             throw new IllegalArgumentException("Color list cannot be null or empty.");
@@ -49,14 +54,20 @@ public class Obstacle extends GeneratedObj {
             new Color(107, 123, 98),
             new Color(187, 183, 131),
             new Color(127, 166, 135),
-            new Color(157, 184, 144));
+            new Color(157, 184, 144),
+            new Color(228, 100, 100),
+            new Color(107, 127, 125),
+            new Color(123, 86, 54),
+            new Color(250, 103, 77),
+            new Color(126, 157, 159)
+    );
 
-    //-----------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------
 
     @Override
     public void draw(Graphics g) {
         g.setColor(this.color);
-        g.fillRoundRect(this.getPx(), this.getPy(), this.getWidth(), this.getHeight(),15, 15);
+        g.fillRoundRect(this.getPx(), this.getPy(), this.getWidth(), this.getHeight(), 15, 15);
     }
 
     @Override

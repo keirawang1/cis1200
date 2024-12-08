@@ -21,9 +21,9 @@ import javax.swing.Timer;
 
 public class GameDisplay extends JPanel {
     // the state of the game logic
-    private Bird bird = new Bird(1000, 400); //controllable player
-    private ArrayList<Obstacle> obstacles = new ArrayList<>(); //collection that manages obstacles
-    private ArrayList<Coin> coins = new ArrayList<>(); //collection that manages coins
+    private Bird bird = new Bird(1000, 400); // controllable player
+    private ArrayList<Obstacle> obstacles = new ArrayList<>(); // collection that manages obstacles
+    private ArrayList<Coin> coins = new ArrayList<>(); // collection that manages coins
     private boolean playing = true; // whether the game is paused
     private int score = 0;
     private int highScore = 0;
@@ -41,30 +41,53 @@ public class GameDisplay extends JPanel {
     // Update interval for timer, in milliseconds
     public static final int INTERVAL = 20;
 
-    //private Image backgroundImage;
+    // private Image backgroundImage;
 
-    //GETTERS --------------------------------------------------------------------
-    public ArrayList<Obstacle> getObstacles() { return obstacles; }
+    // GETTERS --------------------------------------------------------------------
+    public ArrayList<Obstacle> getObstacles() {
+        return obstacles;
+    }
 
-    public ArrayList<Coin> getCoins() { return coins; }
+    public ArrayList<Coin> getCoins() {
+        return coins;
+    }
 
-    public int getScore() { return score; }
+    public int getScore() {
+        return score;
+    }
 
-    //SETTERS --------------------------------------------------------------------
+    public Bird getBird() {
+        return bird;
+    }
 
-    public void setBird(Bird bird) { this.bird = bird; }
+    // SETTERS --------------------------------------------------------------------
 
-    public void setScore(int score) { this.score = score; }
+    public void setBird(Bird bird) {
+        this.bird = bird;
+    }
 
-    public void setObstacles(List<Obstacle> obstacles) { this.obstacles.addAll(obstacles); }
+    public void setScore(int score) {
+        this.score = score;
+    }
 
-    public void setCoins(List<Coin> coins) { this.coins.addAll(coins); }
+    public void setObstacles(List<Obstacle> obstacles) {
+        this.obstacles.addAll(obstacles);
+    }
 
-    public void setTickCounter(int tickCounter) { this.tickCounter = tickCounter; }
+    public void setCoins(List<Coin> coins) {
+        this.coins.addAll(coins);
+    }
 
-    public void setHighScore(int highScore) { this.highScore = highScore; }
+    public void setTickCounter(int tickCounter) {
+        this.tickCounter = tickCounter;
+    }
 
-    // CONSTRUCTOR -----------------------------------------------------------------------------
+    public void setHighScore(int highScore) {
+        this.highScore = highScore;
+    }
+
+    // CONSTRUCTOR
+    // -----------------------------------------------------------------------------
 
     public GameDisplay(JLabel scoreBoard) {
         // creates border around the court area, JComponent method
@@ -73,11 +96,13 @@ public class GameDisplay extends JPanel {
         timer.start();
         setFocusable(true);
 
-        /*try {
-            backgroundImage = ImageIO.read(new File("files/background.png"));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } */
+        /*
+         * try {
+         * backgroundImage = ImageIO.read(new File("files/background.png"));
+         * } catch (IOException e) {
+         * throw new RuntimeException(e);
+         * }
+         */
 
         // This key listener allows the square to move as long as an arrow key
         // is pressed, by changing the square's velocity accordingly. (The tick
@@ -101,21 +126,23 @@ public class GameDisplay extends JPanel {
             }
         });
         this.scoreBoard = scoreBoard;
-
-        Coin.generateRandomCoin(coins, obstacles);
     }
 
-    // TICK -----------------------------------------------------------------------------
+    // TICK
+    // -----------------------------------------------------------------------------
 
     void tick() {
         if (playing && !isGameOver) {
             bird.move();
-            scoreBoard.setText("High Score: " + highScore + "                         Score: " + score);
+            scoreBoard.setText(
+                    "High Score: " + highScore + "                         Score: " + score
+            );
 
             if (!obstacles.isEmpty()) {
                 Obstacle lastOb = obstacles.get(obstacles.size() - 1);
                 if (COURT_WIDTH - lastOb.getPx() - lastOb.getWidth() > 200) {
                     Obstacle.generateRandomObstacle(obstacles);
+                    Coin.generateRandomCoin(coins, obstacles);
                 }
             }
 
@@ -150,7 +177,7 @@ public class GameDisplay extends JPanel {
                     break;
                 }
                 if (o.getPx() + o.getWidth() < bird.getPx()) {
-                    if (lastObstacle < o.getId()) {    
+                    if (lastObstacle < o.getId()) {
                         score += 100;
                         AudioPlayer.playEffect("files/score.wav");
                         if (score > highScore) {
@@ -169,12 +196,15 @@ public class GameDisplay extends JPanel {
         tickCounter++;
     }
 
-    // RESET & PAUSE -----------------------------------------------------------------------------
+    // RESET & PAUSE
+    // -----------------------------------------------------------------------------
 
     public void reset() {
         bird = new Bird(COURT_WIDTH, COURT_HEIGHT);
         obstacles = new ArrayList<>();
         Obstacle.generateRandomObstacle(obstacles);
+        coins = new ArrayList<>();
+        Coin.generateRandomCoin(coins, obstacles);
         playing = true;
         // Make sure that this component has the keyboard focus
         requestFocusInWindow();
@@ -186,8 +216,7 @@ public class GameDisplay extends JPanel {
     public void pauseLabelController(JButton button) {
         if (!playing) {
             button.setText("Unpause");
-        }
-        else {
+        } else {
             button.setText("Pause");
         }
     }
@@ -197,24 +226,28 @@ public class GameDisplay extends JPanel {
         pauseLabelController(button);
     }
 
-    // SAVE & LOAD -----------------------------------------------------------------------------
+    // SAVE & LOAD
+    // -----------------------------------------------------------------------------
 
     public void saveGame() {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter("gameState.txt"));
             writer.write("Bird: " + bird.toString() + "\n");
             writer.write("Score: " + score + "\n");
-            writer.write( "HighScore: " + highScore + "\n");
+            writer.write("HighScore: " + highScore + "\n");
             writer.write("TickCounter: " + tickCounter + "\n");
             writer.write("Playing: " + playing + "\n");
             writer.write("GameOver: " + isGameOver + "\n");
+            writer.write("Coins: " + coins.size() + "\n");
+            for (Coin coin : coins) {
+                writer.write(coin.toString() + "\n");
+            }
             writer.write("Obstacles: " + obstacles.size() + "\n");
             for (Obstacle obstacle : obstacles) {
                 writer.write(obstacle.toString() + "\n");
             }
             writer.close();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             System.out.println("Error saving game" + e.getMessage());
         }
     }
@@ -272,8 +305,7 @@ public class GameDisplay extends JPanel {
             playing = playing.substring("Playing: ".length());
             if (playing.equals("true")) {
                 this.playing = true;
-            }
-            else {
+            } else {
                 this.playing = false;
             }
 
@@ -284,9 +316,24 @@ public class GameDisplay extends JPanel {
             gameOver = gameOver.substring("GameOver: ".length());
             if (gameOver.equals("true")) {
                 this.isGameOver = true;
-            }
-            else {
+            } else {
                 this.isGameOver = false;
+            }
+
+            String coinCount = reader.readLine();
+            if (!coinCount.startsWith("Coins: ")) {
+                throw new IllegalArgumentException("Not a valid file");
+            }
+            coinCount = coinCount.substring("Coins: ".length());
+            int x = Integer.parseInt(coinCount);
+            ArrayList<Coin> coins = new ArrayList<>();
+            for (int i = 0; i < x; i++) {
+                String coinPosition = reader.readLine();
+                String[] coinPos = coinPosition.split(", ");
+                int coinX = Integer.parseInt(coinPos[0]);
+                int coinY = Integer.parseInt(coinPos[1]);
+                Coin c = new Coin(coinX, coinY);
+                coins.add(c);
             }
 
             String obstacleCount = reader.readLine();
@@ -306,19 +353,23 @@ public class GameDisplay extends JPanel {
                 int obstacleVelY = Integer.parseInt(fields[4]);
                 Color color = parseColor(fields[5]);
                 int obstacleId = Integer.parseInt(fields[6]);
-                Obstacle o = new Obstacle(obstacleWidth, obstacleHeight,
-                        obstacleY, obstacleVelY, color, obstacleId);
+                Obstacle o = new Obstacle(
+                        obstacleWidth, obstacleHeight,
+                        obstacleY, obstacleVelY, color, obstacleId
+                );
                 o.setPx(obstacleX);
                 obstacleList.add(o);
             }
+            this.setCoins(coins);
             this.setBird(bird);
             this.setObstacles(obstacleList);
             this.setScore(score1);
             this.setHighScore(highScore1);
             this.setTickCounter(tick);
-            scoreBoard.setText("High Score: " + highScore + "                         Score: " + score);
-        }
-        catch (IOException e) {
+            scoreBoard.setText(
+                    "High Score: " + highScore + "                         Score: " + score
+            );
+        } catch (IOException e) {
             throw new RuntimeException("Error loading game" + e.getMessage());
         }
     }
@@ -326,9 +377,12 @@ public class GameDisplay extends JPanel {
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-        /*if (backgroundImage != null)
-            g.drawImage(backgroundImage, 0, 0, COURT_WIDTH, COURT_HEIGHT, this); */
+        /*
+         * if (backgroundImage != null)
+         * g.drawImage(backgroundImage, 0, 0, COURT_WIDTH, COURT_HEIGHT, this);
+         */
         bird.draw(g);
+        coins.forEach(coin -> coin.draw(g));
         obstacles.forEach(obstacle -> obstacle.draw(g));
     }
 

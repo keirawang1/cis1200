@@ -51,7 +51,6 @@ public abstract class GameObj {
         maxY = courtHeight - height;
     }
 
-
     public GameObj(
             int vx, int vy, int px, int py, int width, int height, int courtWidth,
             int courtHeight
@@ -69,6 +68,7 @@ public abstract class GameObj {
         // the upper left corner of the object.
         this.maxX = courtWidth - width;
         this.maxY = courtHeight - height;
+
     }
 
     // **********************************************************************************
@@ -140,7 +140,8 @@ public abstract class GameObj {
         clip();
     }
 
-    //INTERSECT & OUT OF BOUNDS -----------------------------------------------------------
+    // INTERSECT & OUT OF BOUNDS
+    // -----------------------------------------------------------
     public boolean intersects(GameObj that) {
         return (this.px + this.width >= that.px
                 && this.py + this.height >= that.py

@@ -1,19 +1,12 @@
 package flappyBird;
 
-public abstract class GeneratedObj extends GameObj{
-    private int id;
-    public static final int POS_X = 1001;
+public abstract class GeneratedObj extends GameObj {
     public static final int VEL_X = -5;
     public static final int COURT_WIDTH = 2000;
     public static final int COURT_HEIGHT = 400;
 
-    public int getId() {
-        return id;
-    }
-
-    public GeneratedObj(int posY, int velY, int width, int height, int id) {
-        super(VEL_X, velY, POS_X, posY, width, height, COURT_WIDTH, COURT_HEIGHT);
-        this.id = id;
+    public GeneratedObj(int posX, int posY, int velY, int width, int height) {
+        super(VEL_X, velY, posX, posY, width, height, COURT_WIDTH, COURT_HEIGHT);
     }
 
     public static int randomInt(int min, int max) {
