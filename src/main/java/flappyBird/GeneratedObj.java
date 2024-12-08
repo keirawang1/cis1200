@@ -26,4 +26,8 @@ public abstract class GeneratedObj extends GameObj{
         this.setPy(this.getPy() + this.getVy());
     }
 
+    @Override
+    public void clip() {
+    }
+
 }

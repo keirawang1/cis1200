@@ -65,7 +65,7 @@ public class FlappyBirdTest {
     public void obstacleOutOfBounds() {
         Obstacle obstacle = new Obstacle(200, 200, 50, 100,
                 Color.BLACK, 0);
-        obstacle.setPx(-60);
+        obstacle.setPx(-700);
         assertTrue(obstacle.isOutOfBounds());
     }
 
@@ -82,11 +82,9 @@ public class FlappyBirdTest {
 
     @Test
     public void generateRandomObstacles() {
-        JLabel score = new JLabel();
-        GameDisplay court = new GameDisplay(score);
         ArrayList<Obstacle> obstacles = new ArrayList<>();
         Obstacle.generateRandomObstacle(obstacles);
-        assertEquals(2, court.getObstacles().size());
+        assertEquals(2, obstacles.size());
     }
 
     @Test

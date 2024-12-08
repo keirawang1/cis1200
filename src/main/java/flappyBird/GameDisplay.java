@@ -41,7 +41,7 @@ public class GameDisplay extends JPanel {
     // Update interval for timer, in milliseconds
     public static final int INTERVAL = 20;
 
-    private Image backgroundImage;
+    //private Image backgroundImage;
 
     //GETTERS --------------------------------------------------------------------
     public ArrayList<Obstacle> getObstacles() { return obstacles; }
@@ -73,11 +73,11 @@ public class GameDisplay extends JPanel {
         timer.start();
         setFocusable(true);
 
-        try {
+        /*try {
             backgroundImage = ImageIO.read(new File("files/background.png"));
         } catch (IOException e) {
             throw new RuntimeException(e);
-        }
+        } */
 
         // This key listener allows the square to move as long as an arrow key
         // is pressed, by changing the square's velocity accordingly. (The tick
@@ -326,8 +326,8 @@ public class GameDisplay extends JPanel {
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-        //if (backgroundImage != null)
-            //g.drawImage(backgroundImage, 0, 0, COURT_WIDTH, COURT_HEIGHT, this);
+        /*if (backgroundImage != null)
+            g.drawImage(backgroundImage, 0, 0, COURT_WIDTH, COURT_HEIGHT, this); */
         bird.draw(g);
         obstacles.forEach(obstacle -> obstacle.draw(g));
     }
